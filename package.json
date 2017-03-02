@@ -1,0 +1,11 @@
+{
+  "name": "agar",
+  "version": "1.0.0",
+  "description": "backend for multiplayer game",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jesse Clark <jjclakr1982@gmail.com>",
+  "license": "MIT"
+}

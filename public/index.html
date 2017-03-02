@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<title>Agar</title>
+<style>
+#canvas{position: absolute; top: 0; left: 0;}
+</style>
+</head>
+<body>
+<pre id="players">
+</pre>
+<canvas id="canvas"></canvas>
+<script>
+function fetchPlayers(){
+    fetch('players').then(function(response){
+        return response.json()
+    }).then(function(players){
+        var string = JSON.stringify(players, null, '  ');
+        document.getElementById('players').innerHTML = string;
+        drawCanvas(players);
+    });
+}
+function resizeCanvas(){
+    let canvas = document.getElementById('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;    
+}
+function drawCanvas(players){
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    Object.keys(players).forEach(function(id, i) {
+        let player = players[id];
+        let radius = (player.size || 100)/2;
+        let x = canvas.width/2 + player.x;
+        let y = canvas.height/2 - player.y;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2*Math.PI, false);
+        ctx.fillStyle = player.color || 'green';
+        ctx.fill();
+        if (player.name) {
+            ctx.font = '16pt sans-serif';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(player.name, x, y+7);
+        }
+    });
+}
+resizeCanvas();
+window.onresize = resizeCanvas;
+fetchPlayers();
+setInterval(fetchPlayers, 100);
+</script>
+</body>
+</html>
