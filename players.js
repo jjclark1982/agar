@@ -1,11 +1,12 @@
-let express = require('express');
+const express = require('express');
+const session = require('express-session');
 
 let data = {
-    '0.0.0.0': {name: 'nobody', x: 100, y: 100, size: 100}
+    '0000000000': {name: 'nobody', x: 100, y: 100, size: 100}
 };
 
-function otherPlayers(self_id) {
-    let others = [];
+function otherPlayers(self, self_id) {
+    const others = [];
     Object.keys(data).forEach(function(id){
         let other = data[id];
         if (id !== self_id) {
@@ -17,16 +18,22 @@ function otherPlayers(self_id) {
 
 function serialize(player) {
     if (Array.isArray(player)) {
-        let players = player;
+        const players = player;
         return(players.map(serialize).join("\n"));
     }
     else {
-        let fields = [player.x,player.y,player.size,player.name];
+        const fields = [player.x,player.y,player.size,player.name];
         return(fields.join(','));
     }
 }
 
-let players = express.Router();
+const players = express.Router();
+
+players.use(session({
+    secret: 'this is not a good secret',
+    resave: false,
+    saveUninitialized: true
+}));
 
 players.use(function(req, res, next){
     res.set('Access-Control-Allow-Origin', '*');
@@ -50,17 +57,16 @@ players.get('/:id', function(req, res, next){
 });
 
 players.post('/', function(req, res, next) {
-    let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    // TODO: use session id
+    const id = req.session.id;
     if (!('x' in req.headers && 'y' in req.headers)) {
         res.status(400);
         res.send('Error: you must include "x" and "y" headers.');
         return;
     }
-    if (!data[ip]) {
+    if (!data[id]) {
         res.status(201);
     }
-    data[ip] = {
+    data[id] = {
         name: req.headers.name,
         x: parseFloat(req.headers.x),
         y: parseFloat(req.headers.y),
@@ -68,10 +74,10 @@ players.post('/', function(req, res, next) {
         color: req.headers.color,
         last_seen: new Date()
     };
-    res.location(ip);
+    res.location(id);
     // res.set('Refresh', '1; url='+ip);
     // res.send('Created. Redirecting you to '+ip+"\n");
-    let others = otherPlayers(ip);
+    const others = otherPlayers(data[id], id);
     res.format({
         'text/plain': function(){
             res.send(serialize(others));
