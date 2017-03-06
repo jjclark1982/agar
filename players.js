@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 
 let data = {
-    '0000000000': {name: 'nobody', x: 100, y: 100, size: 100}
+    // '0000000000': {name: 'nobody', x: 100, y: 100, size: 100}
 };
 
 function otherPlayers(self, self_id) {
@@ -90,6 +90,10 @@ players.post('/', function(req, res, next) {
             res.send('Not Acceptable');
         }
     })
+});
+
+players.delete('/:id', function(req,res,next){
+    data[req.params.id].dead = true;
 });
 
 module.exports = players;

@@ -3,20 +3,36 @@
 <head>
 <title>Agar</title>
 <style>
-#canvas{position: absolute; top: 0; left: 0;}
+#canvas{position: absolute; top: 0; left: 0; pointer-events: none;}
 </style>
 </head>
 <body>
-<pre id="players">
-</pre>
 <canvas id="canvas"></canvas>
+<pre id="players"></pre>
 <script>
 function fetchPlayers(){
     fetch('players').then(function(response){
         return response.json()
     }).then(function(players){
-        var string = JSON.stringify(players, null, '  ');
-        document.getElementById('players').innerHTML = string;
+        var playersEl = document.getElementById('players');
+        playersEl.innerHTML = '';
+        Object.keys(players).forEach(function(id){
+            var player = players[id];
+            if (player.dead) {
+                return;
+            }
+            var playerEl = document.createElement('div');
+            playerEl.innerHTML = JSON.stringify(player, null, '  ');
+            playersEl.append(playerEl);
+            var killButton = document.createElement('button');
+            killButton.innerHTML = 'remove';
+            killButton.onclick = function(){
+                fetch('players/'+id, {
+                    method: 'DELETE'
+                });
+            };
+            playersEl.append(killButton);
+        })
         drawCanvas(players);
     });
 }
@@ -31,6 +47,9 @@ function drawCanvas(players){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     Object.keys(players).forEach(function(id, i) {
         let player = players[id];
+        if (player.dead) {
+            return;
+        }
         let radius = (player.size || 100)/2;
         let x = canvas.width/2 + player.x;
         let y = canvas.height/2 - player.y;
