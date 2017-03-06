@@ -57,7 +57,8 @@ players.get('/:id', function(req, res, next){
 });
 
 players.post('/', function(req, res, next) {
-    const id = req.session.id;
+//    const id = req.session.id;
+    let id = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (!('x' in req.headers && 'y' in req.headers)) {
         res.status(400);
         res.send('Error: you must include "x" and "y" headers.');
@@ -70,7 +71,7 @@ players.post('/', function(req, res, next) {
         name: req.headers.name,
         x: parseFloat(req.headers.x),
         y: parseFloat(req.headers.y),
-        size: req.headers.size,
+        size: Math.min(req.headers.size || 50, 250),
         color: req.headers.color,
         last_seen: new Date()
     };
@@ -93,6 +94,7 @@ players.post('/', function(req, res, next) {
 });
 
 players.delete('/:id', function(req,res,next){
+    console.log("deleting", req.params.id);
     data[req.params.id].dead = true;
 });
 

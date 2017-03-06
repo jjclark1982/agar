@@ -51,6 +51,9 @@ function drawCanvas(players){
             return;
         }
         let radius = (player.size || 100)/2;
+        if (radius > 250) {
+            radius = 250;
+        }
         let x = canvas.width/2 + player.x;
         let y = canvas.height/2 - player.y;
         ctx.beginPath();
